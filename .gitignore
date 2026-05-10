@@ -1,0 +1,11 @@
+vendor/
+composer.lock
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.env
+env.php
+r
+

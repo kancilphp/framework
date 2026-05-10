@@ -1,0 +1,16 @@
+{
+    "name": "kancilphp/framework",
+    "description": "KancilMinimalis PHP Framework - KISS, zero-dependency",
+    "type": "library",
+    "require": {
+        "php": ">=8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Core\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    }
+}
