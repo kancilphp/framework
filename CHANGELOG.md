@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] — 2026-05-10
+
+### Fixed
+- Model::query() visibility `protected` → `public`, signature aligned with `MySQL::query($sql, $params)` — resolves fatal error from inheritance chain `Model → DB → MySQL`
+- Model::dbCatch() — catches `PDOException` on missing columns (`deleted_at`, `created_at`, `updated_at`) and shows helpful error with fix hint instead of raw 500
+
 ## [0.3.0] — 2026-05-10
 
 ### Added

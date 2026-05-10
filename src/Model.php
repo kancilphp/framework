@@ -11,7 +11,29 @@ class Model extends DB {
     protected static $softDelete = true;
     protected static $dateFormat = 'Y-m-d H:i:s';
 
-    protected static function query() {
+    protected static function missingColumn($col) {
+        $hint = '';
+        if (in_array($col, ['created_at', 'updated_at'])) {
+            $hint = 'Set $timestamps = false in ' . static::class . ' or add `' . $col . '` column.';
+        } elseif ($col === 'deleted_at') {
+            $hint = 'Set $softDelete = false in ' . static::class . ' or add `' . $col . '` column.';
+        }
+        $msg = 'Table `' . static::$table . '` missing column `' . $col . '`. ' . $hint;
+        Response::error(500, $msg);
+    }
+
+    protected static function dbCatch($fn) {
+        try { return $fn(); }
+        catch (\PDOException $e) {
+            if (strpos($e->getMessage(), 'Unknown column') !== false) {
+                preg_match("/Unknown column '([^']+)'/", $e->getMessage(), $m);
+                static::missingColumn($m[1] ?? '?');
+            }
+            throw $e;
+        }
+    }
+
+    public static function query($sql = null, $params = []) {
         $q = Query::table(static::$table);
         if (static::$softDelete) {
             $q->whereNull('deleted_at');
@@ -24,11 +46,15 @@ class Model extends DB {
     }
 
     public static function find($id) {
-        return static::query()->where(static::$primaryKey, $id)->first();
+        return static::dbCatch(fn() =>
+            static::query()->where(static::$primaryKey, $id)->first()
+        );
     }
 
     public static function all() {
-        return static::query()->get();
+        return static::dbCatch(fn() =>
+            static::query()->get()
+        );
     }
 
     public static function where($column, $value) {
@@ -57,34 +83,46 @@ class Model extends DB {
             $data['created_at'] = $now;
             $data['updated_at'] = $now;
         }
-        return Query::table(static::$table)->insert($data);
+        return static::dbCatch(fn() =>
+            Query::table(static::$table)->insert($data)
+        );
     }
 
     public static function updateById($id, array $data) {
         if (static::$timestamps) {
             $data['updated_at'] = date(static::$dateFormat);
         }
-        return static::query()->where(static::$primaryKey, $id)->update($data);
+        return static::dbCatch(fn() =>
+            static::query()->where(static::$primaryKey, $id)->update($data)
+        );
     }
 
     public static function deleteById($id) {
         if (static::$softDelete) {
-            return static::query()->where(static::$primaryKey, $id)->update([
-                'deleted_at' => date(static::$dateFormat),
-            ]);
+            return static::dbCatch(fn() =>
+                static::query()->where(static::$primaryKey, $id)->update([
+                    'deleted_at' => date(static::$dateFormat),
+                ])
+            );
         }
-        return static::query()->where(static::$primaryKey, $id)->delete();
+        return static::dbCatch(fn() =>
+            static::query()->where(static::$primaryKey, $id)->delete()
+        );
     }
 
     public static function destroy($ids) {
         $ids = is_array($ids) ? $ids : [$ids];
         if (empty($ids)) return false;
         if (static::$softDelete) {
-            return static::query()->whereIn(static::$primaryKey, $ids)->update([
-                'deleted_at' => date(static::$dateFormat),
-            ]);
+            return static::dbCatch(fn() =>
+                static::query()->whereIn(static::$primaryKey, $ids)->update([
+                    'deleted_at' => date(static::$dateFormat),
+                ])
+            );
         }
-        return static::query()->whereIn(static::$primaryKey, $ids)->delete();
+        return static::dbCatch(fn() =>
+            static::query()->whereIn(static::$primaryKey, $ids)->delete()
+        );
     }
 
     public static function withTrashed() {
@@ -96,18 +134,24 @@ class Model extends DB {
     }
 
     public static function restore($id) {
-        return Query::table(static::$table)
-            ->where(static::$primaryKey, $id)
-            ->update(['deleted_at' => null]);
+        return static::dbCatch(fn() =>
+            Query::table(static::$table)
+                ->where(static::$primaryKey, $id)
+                ->update(['deleted_at' => null])
+        );
     }
 
     public static function forceDeleteById($id) {
-        return Query::table(static::$table)
-            ->where(static::$primaryKey, $id)
-            ->delete();
+        return static::dbCatch(fn() =>
+            Query::table(static::$table)
+                ->where(static::$primaryKey, $id)
+                ->delete()
+        );
     }
 
     public static function count() {
-        return static::query()->count();
+        return static::dbCatch(fn() =>
+            static::query()->count()
+        );
     }
 }
