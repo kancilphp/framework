@@ -14,5 +14,8 @@ class Env {
             putenv("$key=$value");
             $_ENV[$key] = $value;
         }
+        if ($tz = Config::get('APP_TIMEZONE')) {
+            date_default_timezone_set($tz);
+        }
     }
 }

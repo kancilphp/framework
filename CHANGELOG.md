@@ -3,6 +3,8 @@
 ## [0.2.0] — 2026-05-10
 
 ### Added
+- License (`MIT`) in `composer.json`
+- App-scoped timezone via `APP_TIMEZONE` env config (`Env::load()` auto-sets `date_default_timezone_set()`)
 - Timestamps (created_at, updated_at) auto-populate on create/update
 - Soft delete with `deleted_at` column — enabled by default
 - `whereNull()` and `whereNotNull()` in Query builder
