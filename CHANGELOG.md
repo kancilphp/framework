@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] — 2026-05-10
+
+### Added
+- View parser upgrade: recursive nested `{{#each}}`, `{{@index}}`/`{{@key}}`, `{{@parent.*}}`/`{{@root.*}}` scope traversal
+- `{{> partial}}` — load and render partials from `Themes/{theme}/partials/`
+- `{{#with var}}...{{/with}}` — context scoping block
+
 ## [0.2.0] — 2026-05-10
 
 ### Added
