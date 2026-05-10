@@ -31,6 +31,16 @@ class Query {
         return $this;
     }
 
+    public function whereNull($column) {
+        $this->wheres[] = $column . ' IS NULL';
+        return $this;
+    }
+
+    public function whereNotNull($column) {
+        $this->wheres[] = $column . ' IS NOT NULL';
+        return $this;
+    }
+
     public function whereIn($column, $values) {
         $placeholders = implode(',', array_fill(0, count($values), '?'));
         $this->wheres[] = $column . ' IN (' . $placeholders . ')';

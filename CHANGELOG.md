@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0] — 2026-05-10
+
+### Added
+- Timestamps (created_at, updated_at) auto-populate on create/update
+- Soft delete with `deleted_at` column — enabled by default
+- `whereNull()` and `whereNotNull()` in Query builder
+- Pass-through methods: whereIn, whereLike, orderBy, limit
+- `destroy($ids)` — soft/hard delete multiple records by primary key
+- `withTrashed()` — include soft-deleted records in query
+- `trashed()` — query only soft-deleted records
+- `restore($id)` — un-delete a record
+- `forceDeleteById($id)` — permanently delete regardless of soft delete
+
+### Changed
+- All read methods (find, all, where, count) auto-filter out soft-deleted rows
+- `Model` extends `DB` — no external dependency change
+
 ## [0.1.0] — 2026-05-10
 
 ### Added

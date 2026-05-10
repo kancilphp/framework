@@ -2,6 +2,7 @@
     "name": "kancilphp/framework",
     "description": "KancilMinimalis PHP Framework - KISS, zero-dependency",
     "type": "library",
+    "license": "MIT",
     "require": {
         "php": ">=8.3"
     },
