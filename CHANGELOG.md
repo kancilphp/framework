@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0] — 2026-05-12
+
+### Changed
+- View parser: replaced custom parser with `devtheorem/php-handlebars` (spec-compliant Handlebars implementation) — API surface unchanged, templates fully compatible
+
+### Added
+- Dependency: `devtheorem/php-handlebars ^2.0` (framework-level via Composer)
+
 ## [0.4.0] — 2026-05-10
 
 ### Fixed

@@ -1,6 +1,6 @@
 # KancilPHP Framework
 
-KISS, zero-dependency PHP framework with pre-router caching.
+KISS PHP framework with pre-router caching and minimal dependencies.
 
 ## Features
 
