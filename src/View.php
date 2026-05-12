@@ -29,8 +29,9 @@ class View {
         }
         $template = file_get_contents($file);
 
-        $template = preg_replace_callback('/\{\{route\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $template);
-        $template = preg_replace_callback('/\{\{url\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $template);
+        $repl = fn($m) => url($m[1]);
+        $template = preg_replace_callback('/\{\{route\s+\'([^\']+)\'\}\}/', $repl, $template);
+        $template = preg_replace_callback('/\{\{url\s+\'([^\']+)\'\}\}/', $repl, $template);
 
         $options = [];
         if (strpos($template, '{{>') !== false) {
@@ -58,7 +59,10 @@ class View {
         $partials = [];
         foreach (glob($dir . '*.hbs') as $pf) {
             $name = basename($pf, '.hbs');
-            $partials[$name] = Handlebars::compile(file_get_contents($pf));
+            $content = file_get_contents($pf);
+            $content = preg_replace_callback('/\{\{route\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $content);
+            $content = preg_replace_callback('/\{\{url\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $content);
+            $partials[$name] = Handlebars::compile($content);
         }
         return $partials;
     }

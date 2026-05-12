@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] — 2026-05-12
+
+### Fixed
+- View partials: `{{route}}`/`{{url}}` preprocessing added to `getPartials()` — partial templates now resolve URLs before Handlebars compilation, matching main template behavior
+
 ## [0.5.0] — 2026-05-12
 
 ### Changed
