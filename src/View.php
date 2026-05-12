@@ -6,6 +6,7 @@
 namespace Core;
 
 use DevTheorem\Handlebars\Handlebars;
+use DevTheorem\Handlebars\Options;
 
 class View {
     public static function render($module, $view, $data = []) {
@@ -29,18 +30,17 @@ class View {
         }
         $template = file_get_contents($file);
 
-        $repl = fn($m) => url($m[1]);
-        $template = preg_replace_callback('/\{\{route\s+\'([^\']+)\'\}\}/', $repl, $template);
-        $template = preg_replace_callback('/\{\{url\s+\'([^\']+)\'\}\}/', $repl, $template);
-
-        $options = [];
+        $options = ['helpers' => [
+            'route' => fn($path) => url($path),
+            'url' => fn($path) => url($path),
+        ]];
         if (strpos($template, '{{>') !== false) {
             $partials = self::getPartials();
             if ($partials) $options['partials'] = $partials;
         }
 
         try {
-            $renderer = Handlebars::compile($template);
+            $renderer = Handlebars::compile($template, new Options(knownHelpers: ['route', 'url']));
             return $renderer($data, $options);
         } catch (\Throwable $e) {
             Response::error(500, 'Template error: ' . $e->getMessage());
@@ -60,9 +60,7 @@ class View {
         foreach (glob($dir . '*.hbs') as $pf) {
             $name = basename($pf, '.hbs');
             $content = file_get_contents($pf);
-            $content = preg_replace_callback('/\{\{route\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $content);
-            $content = preg_replace_callback('/\{\{url\s+\'([^\']+)\'\}\}/', fn($m) => url($m[1]), $content);
-            $partials[$name] = Handlebars::compile($content);
+            $partials[$name] = Handlebars::compile($content, new Options(knownHelpers: ['route', 'url']));
         }
         return $partials;
     }

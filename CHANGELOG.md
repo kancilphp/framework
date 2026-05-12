@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0] — 2026-05-12
+
+### Changed
+- View: `{{route}}`/`{{url}}` migrated from regex preprocessing to proper Handlebars helpers (`knownHelpers` + `helpers` array) — fully spec-compliant, partials inherit helpers from parent context automatically
+- All templates: `{{if}}`/`{{endif}}` converted to standard Handlebars `{{#if}}`/`{{/if}}`; `{{if !x}}` → `{{#unless x}}`/`{{/unless}}`
+
+### Removed
+- View: regex preprocessing of `{{route}}`/`{{url}}` in both `render()` and `getPartials()`
+
 ## [0.6.0] — 2026-05-12
 
 ### Fixed
