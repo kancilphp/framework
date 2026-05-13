@@ -21,7 +21,7 @@ class MySQL {
             self::$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
             self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            if (Config::get('APP_DEBUG', 'false') === 'true') {
+            if (Config::get('APP_DEBUG', false)) {
                 Response::error(500, 'DB Connection Error: ' . $e->getMessage());
             }
             self::$pdo = null;

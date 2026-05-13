@@ -28,7 +28,8 @@ class Router {
 
             if ($rMethod !== $method) continue;
 
-            $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $rPattern);
+            $regex = str_replace('.', '\\.', $rPattern);
+            $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $regex);
             $regex = '#^' . $regex . '$#';
 
             if (preg_match($regex, $uri, $matches)) {

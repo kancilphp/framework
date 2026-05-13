@@ -52,7 +52,7 @@ class Arr {
     }
 
     public static function first($array, $callback = null, $default = null) {
-        if ($callback === null) return reset($array) ?: $default;
+        if ($callback === null) return empty($array) ? $default : reset($array);
         foreach ($array as $key => $value) {
             if ($callback($value, $key)) return $value;
         }

@@ -22,7 +22,7 @@ class PostgreSQL {
             self::$pdo = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $user, $pass);
             self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            if (Config::get('APP_DEBUG', 'false') === 'true') {
+            if (Config::get('APP_DEBUG', false)) {
                 Response::error(500, 'DB Connection Error: ' . $e->getMessage());
             }
             self::$pdo = null;

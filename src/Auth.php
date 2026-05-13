@@ -55,6 +55,11 @@ class Auth {
     }
 
     protected static function base64UrlDecode($data) {
-        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+        $data = strtr($data, '-_', '+/');
+        $remainder = strlen($data) % 4;
+        if ($remainder) {
+            $data .= str_repeat('=', 4 - $remainder);
+        }
+        return base64_decode($data);
     }
 }

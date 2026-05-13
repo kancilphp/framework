@@ -23,7 +23,7 @@ class View {
         }
         $file = BASE_PATH . '/app/Themes/' . $theme . '/' . $module . '/' . $view . '.hbs';
         if (!file_exists($file)) {
-            $file = BASE_PATH . '/app/themes/default/' . $module . '/' . $view . '.hbs';
+            $file = BASE_PATH . '/app/Themes/default/' . $module . '/' . $view . '.hbs';
         }
         if (!file_exists($file)) {
             Response::error(500, 'View not found: ' . $module . '/' . $view);

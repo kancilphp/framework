@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0] — 2026-05-13
+
+### Added
+- Response::error() — theme-aware custom error pages: renders `Themes/{theme}/errors/{code}.hbs` if exists, falls back to `Gate::errorPage()`
+
+### Fixed
+- View fallback path case mismatch: lowercase `themes/` to uppercase `Themes/`
+- DB drivers: `APP_DEBUG` check never matched (`=== 'true'` against boolean `true`), DB error messages never shown
+- Auth JWT: `base64UrlDecode()` padding calculation wrong (`str_pad` used total length instead of additional padding)
+- Arr::first(): `reset($array) ?: $default` incorrectly returns default for valid falsy values (0, '', false)
+- Router: escape dot in route patterns (`str_replace('.', '\\.', ...)`) — `/rss.xml` no longer matches `/rssXxml`
+
 ## [0.7.0] — 2026-05-12
 
 ### Changed

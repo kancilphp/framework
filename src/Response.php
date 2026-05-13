@@ -44,6 +44,20 @@ class Response {
             500 => 'Internal Server Error',
         ];
         $title = $errors[$code] ?? 'Error';
+
+        $theme = Config::get('APP_THEME', 'default');
+        $tpl = BASE_PATH . '/app/Themes/' . $theme . '/errors/' . $code . '.hbs';
+        if (file_exists($tpl)) {
+            http_response_code($code);
+            header('Content-Type: text/html; charset=utf-8');
+            echo View::render('errors', (string)$code, [
+                'code' => $code,
+                'title' => $title,
+                'message' => $message,
+            ]);
+            exit;
+        }
+
         $debug = Config::get('APP_DEBUG', false) ? $message : '';
         $dbg = $debug ? '<hr><div class="debug-box"><pre>' . htmlspecialchars($message) . '</pre></div>' : '';
         Gate::errorPage($code, $title, $message, $dbg);
