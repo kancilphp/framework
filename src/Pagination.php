@@ -20,6 +20,32 @@ class Pagination {
         return new self($total, $perPage, $page);
     }
 
+    public static function query($sql, $params = [], $perPage = 20, $page = null) {
+        $page = $page ?? ($_GET['page'] ?? 1);
+        $page = max(1, (int) $page);
+
+        $countSql = "SELECT COUNT(*) as total FROM ({$sql}) AS __count__";
+        $result = DB::first($countSql, $params);
+        $total = (int) ($result['total'] ?? 0);
+
+        $offset = ($page - 1) * $perPage;
+        $data = DB::query("{$sql} LIMIT {$perPage} OFFSET {$offset}", $params);
+
+        $pages = (int) ceil($total / $perPage);
+
+        return [
+            'data' => $data,
+            'total' => $total,
+            'per_page' => $perPage,
+            'current_page' => $page,
+            'total_pages' => $pages,
+            'has_next' => $page < $pages,
+            'has_prev' => $page > 1,
+            'from' => $offset + 1,
+            'to' => min($offset + $perPage, $total),
+        ];
+    }
+
     public function offset() {
         return ($this->currentPage - 1) * $this->perPage;
     }

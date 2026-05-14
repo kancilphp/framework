@@ -87,8 +87,9 @@ class Gate
 
     public static function matchNocache($uri)
     {
-        $nocacheFile = BASE_PATH . '/storage/cache/nocache.php';
-        if (!file_exists($nocacheFile)) return true;
+        $dir = cacheDir();
+        $nocacheFile = $dir ? $dir . '/nocache.php' : null;
+        if (!$nocacheFile || !file_exists($nocacheFile)) return true;
         $map = require $nocacheFile;
         foreach ($map as $pattern => $isNocache) {
             $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $pattern);
@@ -188,12 +189,18 @@ class Gate
             Cache::flushByPrefix(static::$tenantPrefix . $group . '_');
         }
 
+        if (!cacheDir() && strpos($output, '<body') !== false) {
+            $tip = '<div style="background:#fbbf24;color:#000;text-align:center;padding:3px 12px;font:13px/1.4 sans-serif">⚠️ Buat folder <code>cache/</code> dan <code>chmod 0777</code></div>';
+            $output = preg_replace('/<body[^>]*>/', '$0' . $tip, $output);
+        }
+
         if (!$isHead) echo $output; 
     }
 
     public static function enableFullErrors()
     {
         set_error_handler(function ($severity, $msg, $file, $line) {
+            if (!(error_reporting() & $severity)) return false;
             throw new \ErrorException($msg, 0, $severity, $file, $line);
         });
 

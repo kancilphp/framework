@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.0] — 2026-05-15
+
+### Added
+- Validation: 10 new rules — `max`, `alpha`, `integer`, `url`, `date`, `confirmed`, `same`, `different`, `regex`, `between`, `exists`; custom error messages via 3rd param; `fails()` alias for readability
+- Pagination: `Pagination::query($sql, $params, $perPage)` — auto-count + auto-fetch in one call; result includes `data`, `from`, `to` meta
+- Query: `where()` now supports operators (`->where('price', '>', 100)`); new methods: `whereNotIn`, `whereBetween`, `offset()`, `value()`, `pluck()`, `paginate()`, `increment()`, `decrement()`, `toSql()`
+- Hooks: `add_hook($name, $callback)` and `run_hook($name, $data)` global functions — lightweight pub/sub pattern in `helpers.php`
+
+### Changed
+- Storage restructured: `storage/cache/{routes,nocache,*.cache}` → `cache/`; `storage/logs/` → `cache/logs/`; `storage/ratelimit/` → `cache/*.ratelimit` — cache/logs/ratelimit are now in `cache/` (safe to delete), `storage/` reserved for permanent data (`errors/`, `uploads/`)
+- All framework paths updated: App, Cache, Gate, Log, RateLimiter
+- Boot pipeline consolidated: `app/gate.php` + `app/bootstrap.php` → `src/Boot.php` (single entry point in framework); `index.php` now use class `Boot`
+
 ## [0.8.0] — 2026-05-13
 
 ### Added

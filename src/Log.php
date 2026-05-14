@@ -13,9 +13,8 @@ class Log {
 
     private static function path() {
         if (!self::$path) {
-            self::$path = BASE_PATH . '/storage/logs/' . date('Y-m-d') . '.log';
-            $dir = dirname(self::$path);
-            if (!is_dir($dir)) mkdir($dir, 0755, true);
+            $dir = cacheDir('logs/');
+            self::$path = $dir ? $dir . '/' . date('Y-m-d') . '.log' : null;
         }
         return self::$path;
     }
@@ -23,8 +22,13 @@ class Log {
     public static function write($level, $message, array $context = []) {
         $ts = date('Y-m-d H:i:s');
         $ctx = empty($context) ? '' : ' ' . json_encode($context);
-        $line = "[{$ts}] [{$level}] {$message}{$ctx}" . PHP_EOL;
-        file_put_contents(self::path(), $line, FILE_APPEND | LOCK_EX);
+        $line = "[{$ts}] [{$level}] {$message}{$ctx}";
+        $path = self::path();
+        if ($path) {
+            file_put_contents($path, $line . PHP_EOL, FILE_APPEND | LOCK_EX);
+        } else {
+            error_log($line);
+        }
     }
 
     public static function info($message, array $context = []) {

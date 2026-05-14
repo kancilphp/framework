@@ -40,7 +40,7 @@ class RateLimiter {
             return apcu_get($key);
         }
         $path = self::path($key);
-        if (!file_exists($path)) return null;
+        if (!$path || !file_exists($path)) return null;
         return unserialize(file_get_contents($path));
     }
 
@@ -49,8 +49,7 @@ class RateLimiter {
             apcu_store($key, $data, 3600);
         }
         $path = self::path($key);
-        $dir = dirname($path);
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        if (!$path) return;
         file_put_contents($path, serialize($data), LOCK_EX);
     }
 
@@ -59,10 +58,11 @@ class RateLimiter {
             apcu_delete($key);
         }
         $path = self::path($key);
-        if (file_exists($path)) unlink($path);
+        if ($path && file_exists($path)) unlink($path);
     }
 
     protected static function path($key) {
-        return BASE_PATH . '/storage/cache/' . md5($key) . '.ratelimit';
+        $dir = cacheDir();
+        return $dir ? $dir . '/' . md5($key) . '.ratelimit' : null;
     }
 }

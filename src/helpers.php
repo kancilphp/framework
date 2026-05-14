@@ -56,6 +56,16 @@ function retry($times, $callback, $sleep = 0) {
     }
 }
 
+function cacheDir($sub = '') {
+    $dir = BASE_PATH . '/cache/' . ltrim($sub, '/');
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    @chmod($dir, 0777);
+    if (!is_dir($dir) || !is_writable($dir)) return null;
+    return rtrim($dir, '/') . '/';
+}
+
 function tap($value, $callback = null) {
     if ($callback === null) return new class($value) {
         public function __construct(public $value) {}
@@ -63,4 +73,16 @@ function tap($value, $callback = null) {
     };
     $callback($value);
     return $value;
+}
+
+$GLOBALS['_hooks'] = [];
+
+function add_hook($hook, $callback) {
+    $GLOBALS['_hooks'][$hook][] = $callback;
+}
+
+function run_hook($hook, $data = []) {
+    foreach ($GLOBALS['_hooks'][$hook] ?? [] as $callback) {
+        call_user_func($callback, $data);
+    }
 }

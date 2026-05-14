@@ -22,16 +22,18 @@ class App {
     }
 
     protected static function loadRoutes() {
-        $cacheFile = BASE_PATH . '/storage/cache/routes.php';
+        $cacheDir = cacheDir();
+        $cacheFile = $cacheDir ? $cacheDir . '/routes.php' : null;
 
-        $cacheTime = file_exists($cacheFile) ? filemtime($cacheFile) : 0;
-        $latestMtime = 0;
-        foreach (glob(BASE_PATH . '/app/Modules/*/Route.php') as $f) {
-            $latestMtime = max($latestMtime, filemtime($f));
-        }
-
-        if ($cacheTime > 0 && $cacheTime >= $latestMtime) {
-            return require $cacheFile;
+        if ($cacheFile) {
+            $cacheTime = file_exists($cacheFile) ? filemtime($cacheFile) : 0;
+            $latestMtime = 0;
+            foreach (glob(BASE_PATH . '/app/Modules/*/Route.php') as $f) {
+                $latestMtime = max($latestMtime, filemtime($f));
+            }
+            if ($cacheTime > 0 && $cacheTime >= $latestMtime) {
+                return require $cacheFile;
+            }
         }
 
         $groups = [];
@@ -65,22 +67,22 @@ class App {
             }
         }
 
-        $dir = dirname($cacheFile);
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
-        file_put_contents($cacheFile, '<?php return ' . var_export($routes, true) . ';');
+        if ($cacheFile) {
+            file_put_contents($cacheFile, '<?php return ' . var_export($routes, true) . ';');
 
-        // Write nocache map for gate.php
-        $nocacheFile = $dir . '/nocache.php';
-        $map = [];
-        foreach ($routes as $r) {
-            if ($r[0] !== 'GET') continue;
-            $has = false;
-            foreach ($r[3] ?? [] as $mw) {
-                if (strpos($mw, 'nocache') !== false) { $has = true; break; }
+            // Write nocache map for gate.php
+            $nocacheFile = $cacheDir . '/nocache.php';
+            $map = [];
+            foreach ($routes as $r) {
+                if ($r[0] !== 'GET') continue;
+                $has = false;
+                foreach ($r[3] ?? [] as $mw) {
+                    if (strpos($mw, 'nocache') !== false) { $has = true; break; }
+                }
+                $map[$r[1]] = $has;
             }
-            $map[$r[1]] = $has;
+            file_put_contents($nocacheFile, '<?php return ' . var_export($map, true) . ';');
         }
-        file_put_contents($nocacheFile, '<?php return ' . var_export($map, true) . ';');
 
         return $routes;
     }

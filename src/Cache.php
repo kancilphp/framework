@@ -15,7 +15,8 @@ class Cache {
     }
 
     public static function filePath($key) {
-        return BASE_PATH . '/storage/cache/' . $key . '.cache';
+        $dir = cacheDir();
+        return $dir ? $dir . '/' . $key . '.cache' : null;
     }
 
     public static function enabled() {
@@ -36,11 +37,11 @@ class Cache {
             return $data !== false ? json_decode($data, true) : null;
         }
         $path = self::filePath($key);
-        if (!file_exists($path)) return null;
+        if (!$path || !file_exists($path)) return null;
         $content = file_get_contents($path);
         $data = json_decode($content, true);
         if (!$data || $data['expires'] < time()) {
-            if (file_exists($path)) unlink($path);
+            if ($path && file_exists($path)) unlink($path);
             return null;
         }
         return $data['value'];
@@ -60,6 +61,7 @@ class Cache {
             return;
         }
         $path = self::filePath($key);
+        if (!$path) return;
         $data = json_encode(['key' => $key, 'value' => $value, 'expires' => time() + $ttl]);
         file_put_contents($path, $data);
     }
@@ -87,7 +89,7 @@ class Cache {
             return;
         }
         $path = self::filePath($key);
-        if (file_exists($path)) unlink($path);
+        if ($path && file_exists($path)) unlink($path);
     }
 
     public static function clear() {
@@ -106,7 +108,9 @@ class Cache {
             }
             return;
         }
-        $files = glob(BASE_PATH . '/storage/cache/*.cache');
+        $dir = cacheDir();
+        if (!$dir) return;
+        $files = glob($dir . '/*.cache');
         foreach ($files as $file) unlink($file);
     }
 
@@ -132,7 +136,9 @@ class Cache {
             }
             return;
         }
-        $files = glob(BASE_PATH . '/storage/cache/' . "{$prefix}*.cache");
+        $dir = cacheDir();
+        if (!$dir) return;
+        $files = glob($dir . '/' . "{$prefix}*.cache");
         if ($files) {
             foreach ($files as $f) @unlink($f);
         }

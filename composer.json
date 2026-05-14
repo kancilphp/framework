@@ -1,6 +1,5 @@
 {
     "name": "kancilphp/framework",
-    "version": "0.8.0",
     "description": "KancilMinimalis PHP Framework - KISS, minimal dependencies",
     "type": "library",
     "license": "MIT",
