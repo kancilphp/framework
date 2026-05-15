@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.10.0] — 2026-05-15
+
+### Performance
+- Boot: cache check (`Gate::preRun()`) moved before DB alias, helpers, hooks — cache hit exits before expensive operations
+- Boot: `Env::load()` moved after cache check — cache hit no longer runs full env loading (60+ function calls)
+- Boot: removed duplicate `require env.php` for `APP_DEBUG` — uses `Config::get()` instead
+- Cache file driver: replaced `json_encode`/`json_decode` with raw format `{expires}:{hash}\n{html}` — zero parse overhead per cache hit
+- Cache Redis driver: removed `json_encode`/`json_decode` — stores/gets raw string directly
+- Cache: pre-computed md5 hash stored in file header — `serveETagAndExit()` uses it directly, no `md5(17KB)` per cache hit
+- Cache: added `$lastHash` static property — ETag hash available without recomputation
+- App route cache: removed `glob()` + 12× `filemtime()` validation — simple `file_exists` check, cache valid until deleted
+- Router: added string comparison (`$uri === $rPattern`) before regex for static routes — zero regex for `/`, `/info`, `/login`, etc.
+- Gate: session no longer started for `/theme/*` asset requests — no `Set-Cookie` on CSS/JS
+- Gate: `isEnabled()` simplified to `Config::get('CACHE_ENABLE', true) !== false` — removed redundant `require env.php`
+- Gate: `matchNocache()` — `isset($map[$uri])` for O(1) static route lookup before regex loop
+- Gate: `preRun()` — `matchNocache()` skipped for `/theme/*` asset requests (no session, no nocache check)
+
+### Added
+- View: module view lookup — `render()` checks `Modules/{Module}/Views/{view}.hbs` before falling back to theme directory
+- App: built-in theme asset serving — `serveTheme()` handles `/theme/{theme}/{file}` for CSS/JS/images/fonts with ETag + 304 + 1 year cache
+- SQLite driver — full `query()`, `first()`, `execute()`, transactions, WAL mode, foreign keys
+
+### Changed
+- DB drivers (MySQL, PostgreSQL): `connect()` no longer catches `PDOException` — exception propagates naturally to controller `try-catch` for graceful DB-unavailable handling
+
+### Removed
+- Gate: duplicate `Gate::init()` in `Boot::run()` — `Gate::enableFullErrors()` already sets all error handlers
+
 ## [0.9.0] — 2026-05-15
 
 ### Added

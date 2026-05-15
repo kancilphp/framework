@@ -6,18 +6,16 @@
 namespace Core\Drivers;
 use Core\Config;
 use PDO;
-class PostgreSQL {
+class SQLite {
     protected static $pdo = null;
 
     protected static function connect() {
         if (self::$pdo !== null) return self::$pdo;
-        $host = Config::get('DB_HOST', '127.0.0.1');
-        $dbname = Config::get('DB_NAME', 'kancil');
-        $user = Config::get('DB_USER', 'root');
-        $pass = Config::get('DB_PASS', '');
-        $port = Config::get('DB_PORT', '5432');
-        self::$pdo = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $user, $pass);
+        $path = Config::get('DB_NAME', BASE_PATH . '/database/kancil.sqlite');
+        self::$pdo = new PDO("sqlite:$path");
         self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        self::$pdo->exec("PRAGMA journal_mode=WAL");
+        self::$pdo->exec("PRAGMA foreign_keys=ON");
         return self::$pdo;
     }
 

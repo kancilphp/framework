@@ -7,6 +7,12 @@ namespace Core;
 
 class App {
     public static function run() {
+        $uri = REQUEST_URI_CLEAN;
+
+        if (preg_match('#^/theme/([a-zA-Z0-9_-]+)/(.+)$#', $uri, $m)) {
+            self::serveTheme($m[1], $m[2]);
+        }
+
         $router = new Router();
         $routes = self::loadRoutes();
         foreach ($routes as $route) {
@@ -14,26 +20,46 @@ class App {
         }
 
         $method = Request::method();
-        $uri = REQUEST_URI_CLEAN;
-
         $router->dispatch($method, $uri);
 
         return Response::$body;
+    }
+
+    protected static function serveTheme($theme, $file) {
+        if (!preg_match('/^[a-zA-Z0-9_\/-]+\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/', $file)) {
+            return;
+        }
+        $path = BASE_PATH . '/app/Themes/' . $theme . '/' . $file;
+        if (!file_exists($path)) {
+            return;
+        }
+        $mtime = filemtime($path);
+        $etag = '"' . md5($path . $mtime) . '"';
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+            header('HTTP/1.1 304 Not Modified');
+            exit;
+        }
+        $mimes = [
+            'css' => 'text/css', 'js' => 'application/javascript',
+            'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif', 'svg' => 'image/svg+xml', 'ico' => 'image/x-icon',
+            'woff' => 'font/woff', 'woff2' => 'font/woff2', 'ttf' => 'font/ttf',
+            'eot' => 'application/vnd.ms-fontobject',
+        ];
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        header('Content-Type: ' . ($mimes[$ext] ?? 'application/octet-stream') . '; charset=utf-8');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        header('ETag: ' . $etag);
+        readfile($path);
+        exit;
     }
 
     protected static function loadRoutes() {
         $cacheDir = cacheDir();
         $cacheFile = $cacheDir ? $cacheDir . '/routes.php' : null;
 
-        if ($cacheFile) {
-            $cacheTime = file_exists($cacheFile) ? filemtime($cacheFile) : 0;
-            $latestMtime = 0;
-            foreach (glob(BASE_PATH . '/app/Modules/*/Route.php') as $f) {
-                $latestMtime = max($latestMtime, filemtime($f));
-            }
-            if ($cacheTime > 0 && $cacheTime >= $latestMtime) {
-                return require $cacheFile;
-            }
+        if ($cacheFile && file_exists($cacheFile)) {
+            return require $cacheFile;
         }
 
         $groups = [];

@@ -45,11 +45,7 @@ class Gate
 
     public static function isEnabled()
     {
-        $f = BASE_PATH . '/env.php';
-        if (!file_exists($f)) return true;
-        $config = require $f;
-        $v = $config['CACHE_ENABLE'] ?? true;
-        return $v !== false && $v !== '0' && $v !== 'off' && $v !== 'false' && $v !== 'no' && $v !== 'disable';
+        return Config::get('CACHE_ENABLE', true) !== false;
     }
 
     public static function cacheKey($group, $userId, $prefix = '')
@@ -64,9 +60,9 @@ class Gate
         header_remove('Pragma');
     }
 
-    public static function serveETagAndExit($cached)
+    public static function serveETagAndExit($cached, $hash = null)
     {
-        $etag = '"' . md5($cached) . '"';
+        $etag = '"' . ($hash ?? md5($cached)) . '"';
         if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
             http_response_code(304);
             static::cleanHeaders();
@@ -91,7 +87,9 @@ class Gate
         $nocacheFile = $dir ? $dir . '/nocache.php' : null;
         if (!$nocacheFile || !file_exists($nocacheFile)) return true;
         $map = require $nocacheFile;
+        if (isset($map[$uri])) return $map[$uri];
         foreach ($map as $pattern => $isNocache) {
+            if (strpos($pattern, ':') === false) continue;
             $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $pattern);
             if (preg_match('#^' . $regex . '$#', $uri)) return $isNocache;
         }
@@ -131,12 +129,13 @@ class Gate
         $seg = explode('/', trim($uri, '/'));
         $group = $seg[0] ?: 'home';
 
+        $isAsset = preg_match('#^/theme/#', $uri);
+
         $hasNocache = false;
-        if ($method === 'GET') {
+        if ($method === 'GET' && !$isAsset) {
             $hasNocache = static::matchNocache($uri);
         }
-
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE && !$isAsset) {
             session_cache_limiter('');
             session_start([
                 'cookie_httponly' => true,
@@ -145,7 +144,7 @@ class Gate
                 'use_strict_mode' => true,
             ]);
         }
-        $userId = $_SESSION['user']['id'] ?? 'guest';
+        $userId = $isAsset ? 'guest' : ($_SESSION['user']['id'] ?? 'guest');
 
         $cacheEnabled = static::isEnabled();
         $cacheKey = static::cacheKey($group, $userId, static::$tenantPrefix);
@@ -153,7 +152,7 @@ class Gate
         if ($method === 'GET' && !$hasNocache && $cacheEnabled) {
             $cached = Cache::get($cacheKey);
             if ($cached !== null) {
-                static::serveETagAndExit($cached);
+                static::serveETagAndExit($cached, Cache::$lastHash);
             }
         }
 

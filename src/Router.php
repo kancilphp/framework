@@ -28,6 +28,13 @@ class Router {
 
             if ($rMethod !== $method) continue;
 
+            if ($uri === $rPattern) {
+                Request::$params = [];
+                if (!Middleware::run($rMiddleware)) return;
+                self::callHandler($rHandler);
+                return;
+            }
+
             $regex = str_replace('.', '\\.', $rPattern);
             $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $regex);
             $regex = '#^' . $regex . '$#';

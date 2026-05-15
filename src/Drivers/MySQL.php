@@ -5,8 +5,6 @@
 
 namespace Core\Drivers;
 use Core\Config;
-use Core\Response;
-use PDOException;
 use PDO;
 class MySQL {
     protected static $pdo = null;
@@ -17,16 +15,8 @@ class MySQL {
         $dbname = Config::get('DB_NAME', 'kancil');
         $user = Config::get('DB_USER', 'root');
         $pass = Config::get('DB_PASS', '');
-        try {
-            self::$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-            self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            if (Config::get('APP_DEBUG', false)) {
-                Response::error(500, 'DB Connection Error: ' . $e->getMessage());
-            }
-            self::$pdo = null;
-            return null;
-        }
+        self::$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
+        self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         return self::$pdo;
     }
 

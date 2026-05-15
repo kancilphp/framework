@@ -23,6 +23,9 @@ class View {
         }
         $file = BASE_PATH . '/app/Themes/' . $theme . '/' . $module . '/' . $view . '.hbs';
         if (!file_exists($file)) {
+            $file = BASE_PATH . '/app/Modules/' . $module . '/Views/' . $view . '.hbs';
+        }
+        if (!file_exists($file)) {
             $file = BASE_PATH . '/app/Themes/default/' . $module . '/' . $view . '.hbs';
         }
         if (!file_exists($file)) {

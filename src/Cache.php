@@ -6,6 +6,7 @@
 namespace Core;
 class Cache {
     protected static $redis = null;
+    public static $lastHash = null;
 
     protected static function driver() {
         $driver = Config::get('CACHE_DRIVER', 'file');
@@ -34,17 +35,22 @@ class Cache {
             $redis = self::redis();
             if (!$redis) return null;
             $data = $redis->get(self::prefix($key));
-            return $data !== false ? json_decode($data, true) : null;
+            return $data !== false ? $data : null;
         }
         $path = self::filePath($key);
         if (!$path || !file_exists($path)) return null;
         $content = file_get_contents($path);
-        $data = json_decode($content, true);
-        if (!$data || $data['expires'] < time()) {
-            if ($path && file_exists($path)) unlink($path);
+        if (!$content) return null;
+        $pos = strpos($content, "\n");
+        if ($pos === false) return null;
+        $header = substr($content, 0, $pos);
+        [$expires, $hash] = explode(':', $header, 2);
+        if ((int)$expires < time()) {
+            @unlink($path);
             return null;
         }
-        return $data['value'];
+        self::$lastHash = $hash;
+        return substr($content, $pos + 1);
     }
 
     public static function set($key, $value, $ttl = 60) {
@@ -57,13 +63,14 @@ class Cache {
         if ($driver === 'redis') {
             $redis = self::redis();
             if (!$redis) return;
-            $redis->setex(self::prefix($key), $ttl, json_encode($value));
+            $redis->setex(self::prefix($key), $ttl, $value);
             return;
         }
         $path = self::filePath($key);
         if (!$path) return;
-        $data = json_encode(['key' => $key, 'value' => $value, 'expires' => time() + $ttl]);
-        file_put_contents($path, $data);
+        $expires = time() + $ttl;
+        $hash = md5($value);
+        file_put_contents($path, "{$expires}:{$hash}\n{$value}");
     }
 
     public static function remember($key, $ttl, $callback) {

@@ -57,13 +57,17 @@ function retry($times, $callback, $sleep = 0) {
 }
 
 function cacheDir($sub = '') {
+    static $dirs = [];
+    $key = $sub;
+    if (isset($dirs[$key])) return $dirs[$key];
     $dir = BASE_PATH . '/cache/' . ltrim($sub, '/');
     if (!is_dir($dir)) {
         @mkdir($dir, 0777, true);
     }
     @chmod($dir, 0777);
-    if (!is_dir($dir) || !is_writable($dir)) return null;
-    return rtrim($dir, '/') . '/';
+    if (!is_dir($dir) || !is_writable($dir)) return $dirs[$key] = null;
+    $dirs[$key] = rtrim($dir, '/') . '/';
+    return $dirs[$key];
 }
 
 function tap($value, $callback = null) {
