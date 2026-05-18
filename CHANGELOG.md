@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.0] — 2026-05-18
+
+### Added
+- View: `eq` helper registered — `{{#if (eq a b)}}` now works in templates and partials
+- `Core\Session` class — tenant-prefixed session with `get/set/flash/flashError/cart/cartSet/cartClear/login/logout/user` methods; `Session::prefix()` uses `Request::$tenant` for automatic isolation
+- `Model::$tenantColumn` property (default `null`) — when set, `query()` auto-adds `WHERE $tenantColumn = ?` using `Request::$tenant`; opt-in, backward compatible for single-tenant projects
+
+### Changed
+- `Auth::login/logout/user()` — uses `Session::login/logout/user()` instead of direct `$_SESSION` access
+- `Gate::preRun()` — `Session::get('user')` replaces `$_SESSION['user']`
+
+### Fixed
+- Gate: trailing slash normalization in `parseUrl()` — `/page/foo/` now correctly matches route `/page/foo` instead of returning 404
+- Gate: `cacheKey()` now uses normalized `$GLOBALS['_uri']` instead of raw `$_SERVER['REQUEST_URI']` — prevents duplicate cache entries for `/page/foo` vs `/page/foo/`
+
 ## [0.10.0] — 2026-05-15
 
 ### Performance

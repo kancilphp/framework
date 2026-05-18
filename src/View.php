@@ -36,6 +36,7 @@ class View {
         $options = ['helpers' => [
             'route' => fn($path) => url($path),
             'url' => fn($path) => url($path),
+            'eq' => fn($a, $b) => $a === $b,
         ]];
         if (strpos($template, '{{>') !== false) {
             $partials = self::getPartials();
@@ -43,7 +44,7 @@ class View {
         }
 
         try {
-            $renderer = Handlebars::compile($template, new Options(knownHelpers: ['route', 'url']));
+            $renderer = Handlebars::compile($template, new Options(knownHelpers: ['route', 'url', 'eq']));
             return $renderer($data, $options);
         } catch (\Throwable $e) {
             Response::error(500, 'Template error: ' . $e->getMessage());
@@ -63,7 +64,7 @@ class View {
         foreach (glob($dir . '*.hbs') as $pf) {
             $name = basename($pf, '.hbs');
             $content = file_get_contents($pf);
-            $partials[$name] = Handlebars::compile($content, new Options(knownHelpers: ['route', 'url']));
+            $partials[$name] = Handlebars::compile($content, new Options(knownHelpers: ['route', 'url', 'eq']));
         }
         return $partials;
     }

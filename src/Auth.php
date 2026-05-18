@@ -6,12 +6,12 @@
 namespace Core;
 class Auth {
     public static function login($user) {
-        session_regenerate_id(true);
-        $_SESSION['user'] = $user;
+        Session::login($user);
     }
 
     public static function user() {
-        if (isset($_SESSION['user'])) return $_SESSION['user'];
+        $u = Session::user();
+        if ($u) return $u;
         return self::userFromToken();
     }
 
@@ -20,8 +20,7 @@ class Auth {
     }
 
     public static function logout() {
-        session_regenerate_id(true);
-        unset($_SESSION['user']);
+        Session::logout();
     }
 
     public static function generate($user) {

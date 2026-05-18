@@ -50,7 +50,9 @@ class Gate
 
     public static function cacheKey($group, $userId, $prefix = '')
     {
-        $fullUri = $GLOBALS['_scheme'] . '://' . $GLOBALS['_host'] . $_SERVER['REQUEST_URI'];
+        $path = $GLOBALS['_uri'];
+        $qs = $_SERVER['QUERY_STRING'] ?? '';
+        $fullUri = $GLOBALS['_scheme'] . '://' . $GLOBALS['_host'] . $path . ($qs ? '?' . $qs : '');
         return "{$prefix}{$group}_{$userId}_" . md5($fullUri);
     }
 
@@ -104,6 +106,9 @@ class Gate
             $uri = substr($uri, strlen($base));
         }
         $uri = $uri ?: '/';
+        if ($uri !== '/' && str_ends_with($uri, '/')) {
+            $uri = rtrim($uri, '/');
+        }
 
         $GLOBALS['_base'] = $base;
         $GLOBALS['_uri'] = $uri;
@@ -144,7 +149,7 @@ class Gate
                 'use_strict_mode' => true,
             ]);
         }
-        $userId = $isAsset ? 'guest' : ($_SESSION['user']['id'] ?? 'guest');
+        $userId = $isAsset ? 'guest' : (Session::get('user')['id'] ?? 'guest');
 
         $cacheEnabled = static::isEnabled();
         $cacheKey = static::cacheKey($group, $userId, static::$tenantPrefix);

@@ -7,9 +7,10 @@ namespace Core;
 class Request {
     public static $params = [];
     public static $tenant = '';
+    public static $tenantData = [];
 
-    public static function tenant() {
-        return self::$tenant;
+    public static function tenant($full = false) {
+        return $full ? self::$tenantData : self::$tenant;
     }
 
     public static function setParams($params) {

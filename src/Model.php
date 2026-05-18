@@ -9,6 +9,7 @@ class Model extends DB {
     protected static $primaryKey = 'id';
     protected static $timestamps = true;
     protected static $softDelete = true;
+    protected static $tenantColumn = null;
     protected static $dateFormat = 'Y-m-d H:i:s';
 
     protected static function missingColumn($col) {
@@ -37,6 +38,10 @@ class Model extends DB {
         $q = Query::table(static::$table);
         if (static::$softDelete) {
             $q->whereNull('deleted_at');
+        }
+        $col = static::$tenantColumn;
+        if ($col && \Core\Request::$tenant) {
+            $q->where($col, (int) \Core\Request::$tenant);
         }
         return $q;
     }
