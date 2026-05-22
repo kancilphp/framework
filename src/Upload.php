@@ -44,14 +44,17 @@ class Upload {
         return null;
     }
 
-    public function store($directory) {
+    public function store($directory, $tenantId = null) {
         $err = $this->error();
         if ($err) return false;
 
         $dir = BASE_PATH . '/' . ltrim($directory, '/');
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        if (!is_dir($dir)) mkdir($dir, 0775, true);
 
-        $filename = $this->name ?: uniqid() . '.' . pathinfo($this->file['name'], PATHINFO_EXTENSION);
+        $filename = $this->name ?: uniqid() . '_' . rand(10000, 99999) . '.' . pathinfo($this->file['name'], PATHINFO_EXTENSION);
+        if ($tenantId) {
+            $filename = $tenantId . '_' . $filename;
+        }
         $path = $dir . '/' . $filename;
 
         return move_uploaded_file($this->file['tmp_name'], $path) ? $directory . '/' . $filename : false;

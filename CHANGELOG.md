@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.12.0] — 2026-05-20
+
+### Added
+- `Session::csrfToken()` / `Session::csrfVerify()` — generate and verify CSRF tokens with tenant prefix isolation
+
+### Changed
+- `Upload::store($directory, $tenantId)` — new optional `$tenantId` parameter prepends `{id}_` to filename for filesystem-level tenant isolation without subdirectories; filename now includes `rand(10000, 99999)` suffix for added uniqueness and URL guess resistance
+- `Upload::store()` — `mkdir()` mode changed from `0755` to `0775` so group users (e.g. www-data) can also write
+- `Boot::run()` — added `umask(0002)` so new files/dirs are created with group-writable permissions (`rw-rw-r--` / `rwxrwxr-x`)
+
 ## [0.11.0] — 2026-05-18
 
 ### Added

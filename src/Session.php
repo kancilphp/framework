@@ -81,4 +81,18 @@ class Session {
     public static function cartClear() {
         self::unset('cart');
     }
+
+    public static function csrfToken() {
+        $k = self::prefix() . '_csrf_token';
+        if (empty($_SESSION[$k])) {
+            $_SESSION[$k] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION[$k];
+    }
+
+    public static function csrfVerify($token) {
+        $k = self::prefix() . '_csrf_token';
+        if (empty($_SESSION[$k]) || empty($token)) return false;
+        return hash_equals($_SESSION[$k], $token);
+    }
 }

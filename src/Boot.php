@@ -11,6 +11,7 @@ class Boot {
         header('X-Content-Type-Options: nosniff');
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
+        umask(0002);
 
         $__env = require BASE_PATH . '/env.php';
         Config::set('APP_DEBUG', $__env['APP_DEBUG'] ?? false);
