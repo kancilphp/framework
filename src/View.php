@@ -44,6 +44,9 @@ class View {
         }
 
         try {
+            error_log('View::render_DEBUG: is_discount=' . var_export($data['is_discount'] ?? 'MISSING', true)
+                . ' | discount_amount=' . var_export($data['discount_amount'] ?? 'MISSING', true)
+                . ' | coupon_code=' . var_export($data['coupon_code'] ?? 'MISSING', true));
             $renderer = Handlebars::compile($template, new Options(knownHelpers: ['route', 'url', 'eq']));
             return $renderer($data, $options);
         } catch (\Throwable $e) {

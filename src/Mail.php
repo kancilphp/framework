@@ -46,6 +46,43 @@ class Mail {
             return false;
         }
 
+        $smtpHost = Config::get('SMTP_HOST');
+        if ($smtpHost) {
+            try {
+                $smtp = new Smtp();
+                $smtp->setSMTPConfig(
+                    $smtpHost,
+                    Config::get('SMTP_PORT', 587),
+                    Config::get('SMTP_USER', ''),
+                    Config::get('SMTP_PASS', ''),
+                    Config::get('SMTP_ENCRYPTION', 'tls')
+                );
+
+                $fromEmail = '';
+                $fromName = '';
+                if (isset($this->headers['From'])) {
+                    $fromVal = $this->headers['From'];
+                    if (preg_match('/^(.*?)\s*<([^>]+)>/', $fromVal, $m)) {
+                        $fromName = trim($m[1]);
+                        $fromEmail = $m[2];
+                    } else {
+                        $fromEmail = $fromVal;
+                    }
+                } else {
+                    $fromEmail = Config::get('MAIL_FROM', '');
+                }
+
+                $smtp->setFrom($fromEmail, $fromName);
+                $smtp->setTo($this->to);
+                $smtp->setSubject($this->subject);
+                $smtp->setHtmlMessage($this->body);
+                $smtp->send();
+                return true;
+            } catch (\Exception $e) {
+                return false;
+            }
+        }
+
         $headerLines = [];
         foreach ($this->headers as $key => $value) {
             $headerLines[] = "$key: $value";

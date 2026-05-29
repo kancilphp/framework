@@ -70,7 +70,9 @@ class Cache {
         if (!$path) return;
         $expires = time() + $ttl;
         $hash = md5($value);
-        file_put_contents($path, "{$expires}:{$hash}\n{$value}");
+        $tmp = $path . '.tmp';
+        file_put_contents($tmp, "{$expires}:{$hash}\n{$value}", LOCK_EX);
+        rename($tmp, $path);
     }
 
     public static function remember($key, $ttl, $callback) {

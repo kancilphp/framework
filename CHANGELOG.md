@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.13.0] — 2026-05-27
+
+### Added
+- `Core\Smtp` — raw socket SMTP class with TLS/SSL, AUTH LOGIN, and attachment support
+
+### Changed
+- `Mail::send()` — auto-detects `SMTP_HOST` env config; uses `Smtp` internally when configured, falls back to `mail()` otherwise — zero changes to controller code
+
+### Fixed
+- Cache file driver `set()` now uses atomic write (temp file + `rename()`) — prevents cache corruption under concurrent writes when multiple PHP-FPM workers write to the same cache file simultaneously
+
 ## [0.12.0] — 2026-05-20
 
 ### Added
