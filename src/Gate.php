@@ -140,7 +140,9 @@ class Gate
         if ($method === 'GET' && !$isAsset) {
             $hasNocache = static::matchNocache($uri);
         }
-        if (session_status() === PHP_SESSION_NONE && !$isAsset) {
+
+        $userId = 'guest';
+        if (session_status() === PHP_SESSION_NONE && !$isAsset && !empty($_COOKIE[session_name()])) {
             session_cache_limiter('');
             session_start([
                 'cookie_httponly' => true,
@@ -148,8 +150,8 @@ class Gate
                 'cookie_samesite' => 'Strict',
                 'use_strict_mode' => true,
             ]);
+            $userId = Session::get('user')['id'] ?? 'guest';
         }
-        $userId = $isAsset ? 'guest' : (Session::get('user')['id'] ?? 'guest');
 
         $cacheEnabled = static::isEnabled();
         $cacheKey = static::cacheKey($group, $userId, static::$tenantPrefix);

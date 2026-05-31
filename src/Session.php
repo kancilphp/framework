@@ -14,26 +14,36 @@ class Session {
 
     public static function get($key, $default = null) {
         $k = self::prefix() . $key;
-        return array_key_exists($k, $_SESSION) ? $_SESSION[$k] : $default;
+        return ($_SESSION ?? [])[$k] ?? $default;
     }
 
     public static function set($key, $value) {
+        if (($_SESSION ?? null) === null) {
+            @session_start();
+        }
         $_SESSION[self::prefix() . $key] = $value;
     }
 
     public static function unset($key) {
-        unset($_SESSION[self::prefix() . $key]);
+        $s = $_SESSION ?? null;
+        if ($s !== null) {
+            unset($s[self::prefix() . $key]);
+            $_SESSION = $s;
+        }
     }
 
     public static function has($key) {
-        return array_key_exists(self::prefix() . $key, $_SESSION);
+        return isset(($_SESSION ?? [])[self::prefix() . $key]);
     }
 
     public static function clear() {
         $prefix = self::prefix();
-        foreach ($_SESSION as $k => $v) {
-            if (strpos($k, $prefix) === 0) unset($_SESSION[$k]);
+        $s = $_SESSION ?? null;
+        if ($s === null) return;
+        foreach ($s as $k => $v) {
+            if (strpos($k, $prefix) === 0) unset($s[$k]);
         }
+        $_SESSION = $s;
     }
 
     public static function flash($message) {

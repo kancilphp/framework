@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0] — 2026-05-31
+
+### Changed
+- `Gate::preRun()`: Session start now conditional — only starts when `$_COOKIE[session_name()]` exists. Prevents unnecessary session creation for cached page visitors without cookies.
+- `Session::get()`, `set()`, `has()`, `clear()`, `unset()`: Added null-safety (`$_SESSION ?? null` / `?? []`) to prevent PHP 8.3 warnings when session is not started.
+- `CSRF::generate()`: Added `session_start()` fallback before accessing `$_SESSION['_csrf_token']` — handles pages accessed before session is established.
+
 ## [0.13.0] — 2026-05-27
 
 ### Added

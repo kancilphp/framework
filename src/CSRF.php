@@ -6,6 +6,10 @@
 namespace Core;
 class CSRF {
     public static function generate() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_cache_limiter('');
+            @session_start();
+        }
         if (!isset($_SESSION['_csrf_token'])) {
             $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
         }
