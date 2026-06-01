@@ -73,6 +73,17 @@ class Gate
         header("ETag: {$etag}");
         header("Cache-Control: private, must-revalidate");
         static::cleanHeaders();
+        $path = \Core\Cache::$lastPath;
+        if ($path && file_exists($path)) {
+            $fp = fopen($path, 'r');
+            if ($fp) {
+                fgets($fp);
+                fpassthru($fp);
+                fclose($fp);
+                echo "\n<!-- Cache by 2811 ; 73 de Kancil -->";
+                exit;
+            }
+        }
         echo $cached . "\n<!-- Cache by 2811 ; 73 de Kancil -->";
         exit;
     }
@@ -91,8 +102,16 @@ class Gate
         $map = require $nocacheFile;
         if (isset($map[$uri])) return $map[$uri];
         foreach ($map as $pattern => $isNocache) {
-            if (strpos($pattern, ':') === false) continue;
-            $regex = preg_replace('/:(\w+)/', '(?P<$1>[^/]+)', $pattern);
+            $hasParam = strpos($pattern, ':') !== false;
+            $hasWildcard = strpos($pattern, '*') !== false;
+            if (!$hasParam && !$hasWildcard) continue;
+            $regex = preg_quote($pattern, '#');
+            if ($hasParam) {
+                $regex = preg_replace('/\\\\:(\w+)/', '(?P<$1>[^/]+)', $regex);
+            }
+            if ($hasWildcard) {
+                $regex = str_replace('\\*', '.*', $regex);
+            }
             if (preg_match('#^' . $regex . '$#', $uri)) return $isNocache;
         }
         return false;

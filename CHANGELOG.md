@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.15.0] — 2026-06-01
+
+### Added
+- `Cache::$lastPath` — stores cache file path after `get()`, used by `Gate` for zero-copy serving.
+- `Gate::matchNocache()`: `*` wildcard pattern support for prefix matching (e.g., `/dashboard*` matches all dashboard routes).
+
+### Changed
+- `Gate::serveETagAndExit()`: cache-hit now uses `fpassthru()` from file directly instead of `echo $cached . "\n..."` — eliminates 20KB string concatenation + copy per request. Falls back to original `echo` when `Cache::$lastPath` unavailable.
+
 ## [0.14.0] — 2026-05-31
 
 ### Changed

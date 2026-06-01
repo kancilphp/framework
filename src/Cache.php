@@ -7,6 +7,7 @@ namespace Core;
 class Cache {
     protected static $redis = null;
     public static $lastHash = null;
+    public static $lastPath = null;
 
     protected static function driver() {
         $driver = Config::get('CACHE_DRIVER', 'file');
@@ -50,6 +51,7 @@ class Cache {
             return null;
         }
         self::$lastHash = $hash;
+        self::$lastPath = $path;
         return substr($content, $pos + 1);
     }
 
@@ -174,7 +176,7 @@ class Cache {
         $port = Config::get('REDIS_PORT', 6379);
         try {
             self::$redis = new \Redis();
-            self::$redis->pconnect($host, $port, 2.5);
+            self::$redis->connect($host, $port, 1.0);
         } catch (\Throwable $e) {
             self::$redis = null;
             return null;
