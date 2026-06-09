@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.0] — 2026-06-01
+
+### Changed
+- `RateLimiter::getData()`: `unserialize` → `json_decode`, `setData()`: `serialize` → `json_encode` — prevents unsafe deserialization RCE via cache directory write access.
+
 ## [0.15.0] — 2026-06-01
 
 ### Added

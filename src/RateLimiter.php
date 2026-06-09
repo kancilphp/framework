@@ -41,7 +41,7 @@ class RateLimiter {
         }
         $path = self::path($key);
         if (!$path || !file_exists($path)) return null;
-        return unserialize(file_get_contents($path));
+        return json_decode(file_get_contents($path), true);
     }
 
     protected static function setData($key, $data) {
@@ -50,7 +50,7 @@ class RateLimiter {
         }
         $path = self::path($key);
         if (!$path) return;
-        file_put_contents($path, serialize($data), LOCK_EX);
+        file_put_contents($path, json_encode($data), LOCK_EX);
     }
 
     protected static function clearData($key) {
